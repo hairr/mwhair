@@ -84,7 +84,6 @@ def edittokens():
 	@description: Used to gather tokens to edit, delete, protect, move, block, unblock, email, and import
 	@use: This shouldn't be used in a seperate script, the information is gathered on login
 	"""
-	## <page pageid="66984" ns="0" title="Main Page" touched="2012-09-07T01:51:59Z" lastrevid="1347044" counter="" length="28" redirect="" starttimestamp="2012-09-29T23:10:39Z" edittoken="5a49429263d1997049fc40b94acd820f+\" deletetoken="5a49429263d1997049fc40b94acd820f+\" protecttoken="5a49429263d1997049fc40b94acd820f+\" movetoken="5a49429263d1997049fc40b94acd820f+\" blocktoken="5a49429263d1997049fc40b94acd820f+\" unblocktoken="5a49429263d1997049fc40b94acd820f+\" emailtoken="5a49429263d1997049fc40b94acd820f+\" importtoken="5a49429263d1997049fc40b94acd820f+\" /> dun steal my tokens
 	edit_token_data = {
 	'action':'query',
 	'prop':'info',
@@ -106,6 +105,7 @@ def edittokens():
 			print 'No edit token: Quitting....'
 			sys.exit(1)
 		else:
+			global edit_token
 			edit_token = thes['edittoken']
 
 		if 'delete' in warnings:
@@ -153,6 +153,13 @@ def edittokens():
 		import_token = thes['importtoken']
 
 def edit(title, section=None):
+	"""
+	@description: Gathers information about a specified page
+	@use:import mwhair
+
+	foo = mwhair.edit('bar')
+	@other: This then makes the variable foo the contents of bar
+	"""
 	read_page_data = {
 	'action':'query',
 	'prop':'revisions',
@@ -168,4 +175,34 @@ def edit(title, section=None):
 	s = content['query']['pages']
 	thes = tuple(s.values())[0]
 	wikipage = thes['revisions'][0]['*']
-	print wikipage
+	return wikipage
+
+def save(title, text='',summary='',minor=False,bot=True):
+	"""
+	@description: Saves the contents of the page
+	@use:
+	import mwhair
+
+	mwhair.save('foo')
+	@other: text needs to be specified, if not, the page will only be purged
+	to create a non-bot edit, specifiy bot=False, otherwise, it'll be marked as a bot edit
+	"""
+	save_data = {
+	'action':'edit',
+	'title':title,
+	'text':text,
+	'summary':summary,
+	'minor':minor,
+	'token':edit_token,
+	'format':'json'
+	}
+	if bot is False:
+		pass
+	else:
+		save_data['bot'] = 'True'
+	if not text:
+		save_data['text'] = edit(title) # This will make the page purge
+	data = urllib.urlencode(save_data)
+	response = opener.open('http://runescape.wikia.com/api.php',data)
+	content = json.load(response)
+	return content
