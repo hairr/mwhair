@@ -206,3 +206,139 @@ def save(title, text='',summary='',minor=False,bot=True):
 	response = opener.open('http://runescape.wikia.com/api.php',data)
 	content = json.load(response)
 	return content
+
+def recentchanges(bot=False,rclimit=20):
+	"""
+	@description: Gets the last 20 pages edited on the recent changes and who the user who edited it
+	@use:
+	import mwhair
+
+	foo = mwhair.recentchanges()
+	for pages in foo:
+		print page ## This is an example of how to show the pages
+		... tasks being performed ...
+	"""
+	recent_changes_data = {
+	'action':'query',
+	'list':'recentchanges',
+	'rcprop':'user|title',
+	'rclimit':rclimit,
+	'format':'json'
+	}
+	if bot is False:
+		recent_changes_data['rcshow'] = '!bot'
+	else:
+		pass
+	data = urllib.urlencode(recent_changes_data)
+	response = opener.open('http://runescape.wikia.com/api.php',data)
+	content = json.load(response)
+	pages = tuple(content['query']['recentchanges'])
+	for title in pages:
+		returnlist = [title['title'] for title in pages]
+		return returnlist
+
+def logs(letype=None,leaction=None,lelimit=50,lestart=None,leend=None):
+	"""
+	@description: Gets (default: 50) pages in the specified log, if none specified, it'll list all the logs
+	@use:
+	image mwhair
+
+	foo = mwhair.logs()
+	for pages in foo:
+		print page ## This is only an example to show the pages
+		... tasks being performed ...
+	@other: To specify a log, letype="logtype". leaction will override letype.
+	"""
+	log_events_data = {
+	'action':'query',
+	'list':'logevents',
+	'lelimit':lelimit,
+	'format':'json'
+	}
+	if letype != None:
+		log_events_data['letype'] = letype
+	else:
+		pass
+
+	if leaction != None:
+		log_events_data['leaction'] = leaction
+	else:
+		pass
+
+	if lestart != None:
+		log_events_data['lestart'] = lestart
+	else:
+		pass
+
+	if leend != None:
+		log_events_data['leend'] = leend
+	else:
+		pass
+
+	data = urllib.urlencode(log_events_data)
+	response = opener.open('http://runescape.wikia.com/api.php',data)
+	content = json.load(response)
+	pages = tuple(content['query']['logevents'])
+	for title in pages:
+		returnlist = [title['title'] for title in pages]
+		return returnlist
+
+def backlinks(title,bllimit=10,blnamespace=None):
+	"""
+	@description: Gets (default: 10) pages that link to the specified title
+	@use:
+	import mwhair
+
+	foo = mwhair.backlinks('bar')
+	for pages in foo:
+		print pages ## This is only an example to show the pages
+		... tasks being performed ...
+	"""
+	backlink_data = {
+	'action':'query',
+	'list':'backlinks',
+	'bltitle':title,
+	'bllimit':bllimit,
+	'format':'json'
+	}
+	if blnamespace != None:
+		backlink_data['blnamespace'] = blnamespace
+	else:
+		pass
+	data = urllib.urlencode(backlink_data)
+	response = opener.open('http://runescape.wikia.com/api.php',data)
+	content = json.load(response)
+	pages = tuple(content['query']['backlinks'])
+	for title in pages:
+		returnlist = [title['title'] for title in pages]
+		return returnlist
+
+def imageusage(title,iulimit=10,iunamespace=None):
+	"""
+	@description: Gets (default: 10) pages that use the specified image
+	@use:
+	import mwhair
+
+	foo = mwhair.imageusage('File:Bar.png')
+	for pages in foo:
+		print pages ## This is only an example to show the pages
+		... tasks being performed ...
+	"""
+	imageusage_data = {
+	'action':'query',
+	'list':'imageusage',
+	'iutitle':title,
+	'iulimit':iulimit,
+	'format':'json'
+	}
+	if iunamespace != None:
+		imageusage_data['iunamespace'] = iunamespace
+	else:
+		pass
+	data = urllib.urlencode(imageusage_data)
+	response = opener.open('http://runescape.wikia.com/api.php',data)
+	content = json.load(response)
+	pages = tuple(content['query']['imageusage'])
+	for title in pages:
+		returnlist = [title['title'] for title in pages]
+		return returnlist
