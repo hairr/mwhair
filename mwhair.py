@@ -241,7 +241,7 @@ def logs(letype=None,leaction=None,lelimit=50,lestart=None,leend=None):
 	"""
 	@description: Gets (default: 50) pages in the specified log, if none specified, it'll list all the logs
 	@use:
-	image mwhair
+	import mwhair
 
 	foo = mwhair.logs()
 	for pages in foo:
