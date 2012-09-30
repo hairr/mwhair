@@ -84,7 +84,6 @@ def edittokens():
 	@description: Used to gather tokens to edit, delete, protect, move, block, unblock, email, and import
 	@use: This shouldn't be used in a seperate script, the information is gathered on login
 	"""
-	## <page pageid="66984" ns="0" title="Main Page" touched="2012-09-07T01:51:59Z" lastrevid="1347044" counter="" length="28" redirect="" starttimestamp="2012-09-29T23:10:39Z" edittoken="5a49429263d1997049fc40b94acd820f+\" deletetoken="5a49429263d1997049fc40b94acd820f+\" protecttoken="5a49429263d1997049fc40b94acd820f+\" movetoken="5a49429263d1997049fc40b94acd820f+\" blocktoken="5a49429263d1997049fc40b94acd820f+\" unblocktoken="5a49429263d1997049fc40b94acd820f+\" emailtoken="5a49429263d1997049fc40b94acd820f+\" importtoken="5a49429263d1997049fc40b94acd820f+\" /> dun steal my tokens
 	edit_token_data = {
 	'action':'query',
 	'prop':'info',
