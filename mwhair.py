@@ -342,3 +342,63 @@ def imageusage(title,iulimit=10,iunamespace=None):
 	for title in pages:
 		returnlist = [title['title'] for title in pages]
 		return returnlist
+
+def category(title,cmlimit=10,cmnamespace=None):
+	"""
+	@description: Gets (default: 10) pages that are used in the specified category
+	@use:
+	import mwhair
+
+	foo = mwhair.category('Category:Bar')
+	for pages in foo:
+		print pages ## This is only an example to show the pages
+		... tasks being performed ...
+	"""
+	category_data = {
+	'action':'query',
+	'list':'categorymembers',
+	'cmtitle':title,
+	'cmlimit':cmlimit,
+	'format':'json'
+	}
+	if cmnamespace != None:
+		category_data['cmnamespace'] = cmdnamespace
+	else:
+		pass
+	data = urllib.urlencode(category_data)
+	response = opener.open('http://runescape.wikia.com/api.php',data)
+	content = json.load(response)
+	pages = tuple(content['query']['categorymembers'])
+	for title in pages:
+		returnlist = [title['title'] for title in pages]
+		return returnlist
+
+def template(title,eilimit=10,einamespace=None):
+	"""
+	@description: Gets (default: 10) pages that use the specified template
+	@use:
+	import mwhair
+
+	foo = mwhair.template('Template:Bar')
+	for pages in foo:
+		print pages ## This is only an example to show the pages
+		... tasks being preformed ...
+	"""
+	template_data = {
+	'action':'query',
+	'list':'embeddedin',
+	'eititle':title,
+	'eilimit':eilimit,
+	'format':'json'
+	}
+	if einamespace != None:
+		template_data['einamespace'] = einamespace
+	else:
+		pass
+	data = urllib.urlencode(template_data)
+	response = opener.open('http://runescape.wikia.com/api.php',data)
+	content = json.load(response)
+	pages = tuple(content['query']['embeddedin'])
+	for title in pages:
+		returnlist = [title['title'] for title in pages]
+		return returnlist
