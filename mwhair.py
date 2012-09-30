@@ -382,7 +382,7 @@ def template(title,eilimit=10,einamespace=None):
 	foo = mwhair.template('Template:Bar')
 	for pages in foo:
 		print pages ## This is only an example to show the pages
-		... tasks being preformed ...
+		... tasks being performed ...
 	"""
 	template_data = {
 	'action':'query',
@@ -399,6 +399,47 @@ def template(title,eilimit=10,einamespace=None):
 	response = opener.open('http://runescape.wikia.com/api.php',data)
 	content = json.load(response)
 	pages = tuple(content['query']['embeddedin'])
+	for title in pages:
+		returnlist = [title['title'] for title in pages]
+		return returnlist
+
+def prefix(title,aplimit=10,apprlevel=None,apnamespace=None):
+	"""
+	@description: Gets (default: 10) pages that begin with the specified title
+	@use:
+	import mwhair
+
+	foo = mwhair.prefix('bar')
+	for pages in foo:
+		print pages ## This is only an example to show the pages
+		... tasks being performed ...
+	@other: If this being done in another namespace (Talk, User, etc..) the title input
+	would be the name of the page without the namespace specified (ex. User:Foo would only be Foo)
+	with the appropriate namespace number in apnamespace. Apprlevel is the protection level, 
+	default None|Semi|Full
+	"""
+	prefix_data = {
+	'action':'query',
+	'list':'allpages',
+	'apprefix':title,
+	'aplimit':aplimit,
+	'format':'json'
+	}
+
+	if apprlevel != None:
+		prefix_data['apprlevel'] = apprlevel
+	else:
+		pass
+
+	if apnamespace != None:
+		prefix_data['apnamespace'] = apnamespace
+	else:
+		pass
+
+	data = urllib.urlencode(prefix_data)
+	response = opener.open('http://runescape.wikia.com/api.php',data)
+	content = json.load(response)
+	pages = tuple(content['query']['allpages'])
 	for title in pages:
 		returnlist = [title['title'] for title in pages]
 		return returnlist
