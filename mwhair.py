@@ -26,6 +26,7 @@ from cookielib import CookieJar
 cj = CookieJar()
 opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
 logged_in = False
+wiki = 'http://runescape.wikia.com/api.php'
 
 def login(username, password):
 	"""
@@ -42,11 +43,11 @@ def login(username, password):
 	'format'    : 'json'
 	}
 	data = urllib.urlencode(login_data)
-	response = opener.open("http://runescape.wikia.com/api.php", data)
+	response = opener.open(wiki, data)
 	content = json.load(response)
 	login_data['lgtoken'] = content['login']['token']
 	data = urllib.urlencode(login_data)
-	response = opener.open('http://runescape.wikia.com/api.php', data)
+	response = opener.open(wiki, data)
 	content = json.load(response)
 	if content['login']['result'] == 'Success':
 		print 'Now logged in as %s' % content['login']['lgusername']
@@ -75,7 +76,7 @@ def logout():
 	'format':'json'
 	}
 	data = urllib.urlencode(logout_data)
-	response = opener.open('http://runescape.wikia.com/api.php', data)
+	response = opener.open(wiki, data)
 	content = json.load(response)
 	print "Successfully logged out"
 
@@ -92,7 +93,7 @@ def edittokens():
 	'format':'json'
 	}
 	data = urllib.urlencode(edit_token_data)
-	response = opener.open('http://runescape.wikia.com/api.php', data)
+	response = opener.open(wiki, data)
 	content = json.load(response)
 	s = content['query']['pages']
 	thes = tuple(s.values())[0]
@@ -170,7 +171,7 @@ def edit(title, section=None):
 	if section:
 		read_page_data['rvsection'] = section
 	data = urllib.urlencode(read_page_data)
-	response = opener.open('http://runescape.wikia.com/api.php', data)
+	response = opener.open(wiki, data)
 	content = json.load(response)
 	s = content['query']['pages']
 	thes = tuple(s.values())[0]
@@ -203,7 +204,7 @@ def save(title, text='',summary='',minor=False,bot=True):
 	if not text:
 		save_data['text'] = edit(title) # This will make the page purge
 	data = urllib.urlencode(save_data)
-	response = opener.open('http://runescape.wikia.com/api.php',data)
+	response = opener.open(wiki,data)
 	content = json.load(response)
 	return content
 
@@ -230,7 +231,7 @@ def recentchanges(bot=False,rclimit=20):
 	else:
 		pass
 	data = urllib.urlencode(recent_changes_data)
-	response = opener.open('http://runescape.wikia.com/api.php',data)
+	response = opener.open(wiki,data)
 	content = json.load(response)
 	pages = tuple(content['query']['recentchanges'])
 	for title in pages:
@@ -276,7 +277,7 @@ def logs(letype=None,leaction=None,lelimit=50,lestart=None,leend=None):
 		pass
 
 	data = urllib.urlencode(log_events_data)
-	response = opener.open('http://runescape.wikia.com/api.php',data)
+	response = opener.open(wiki,data)
 	content = json.load(response)
 	pages = tuple(content['query']['logevents'])
 	for title in pages:
@@ -306,7 +307,7 @@ def backlinks(title,bllimit=10,blnamespace=None):
 	else:
 		pass
 	data = urllib.urlencode(backlink_data)
-	response = opener.open('http://runescape.wikia.com/api.php',data)
+	response = opener.open(wiki,data)
 	content = json.load(response)
 	pages = tuple(content['query']['backlinks'])
 	for title in pages:
@@ -336,7 +337,7 @@ def imageusage(title,iulimit=10,iunamespace=None):
 	else:
 		pass
 	data = urllib.urlencode(imageusage_data)
-	response = opener.open('http://runescape.wikia.com/api.php',data)
+	response = opener.open(wiki,data)
 	content = json.load(response)
 	pages = tuple(content['query']['imageusage'])
 	for title in pages:
@@ -366,7 +367,7 @@ def category(title,cmlimit=10,cmnamespace=None):
 	else:
 		pass
 	data = urllib.urlencode(category_data)
-	response = opener.open('http://runescape.wikia.com/api.php',data)
+	response = opener.open(wiki,data)
 	content = json.load(response)
 	pages = tuple(content['query']['categorymembers'])
 	for title in pages:
@@ -396,9 +397,39 @@ def template(title,eilimit=10,einamespace=None):
 	else:
 		pass
 	data = urllib.urlencode(template_data)
-	response = opener.open('http://runescape.wikia.com/api.php',data)
+	response = opener.open(wiki,data)
 	content = json.load(response)
 	pages = tuple(content['query']['embeddedin'])
+	for title in pages:
+		returnlist = [title['title'] for title in pages]
+		return returnlist
+
+def usercontribs(title,uclimit=10,ucnamespace=None):
+	"""
+	@description: Gets (default: 10) pages last edited by the specified user
+	@use:
+	import mwhair
+
+	foo = mwhair.usercontribs('Bar')
+	for pages in foo:
+		print pages ## This is only an example to show the pages
+		... tasks being performed ...
+	"""
+	user_contrib_data = {
+	'action':'query',
+	'list':'usercontribs',
+	'ucuser':title,
+	'uclimit':uclimit,
+	'format':'json'
+	}
+	if ucnamespace != None:
+		user_contrib_data['ucnamespace'] = ucnamespace
+	else:
+		pass
+	data = urllib.urlencode(user_contrib_data)
+	response = opener.open(wiki,data)
+	content = json.load(response)
+	pages = tuple(content['query']['usercontribs'])
 	for title in pages:
 		returnlist = [title['title'] for title in pages]
 		return returnlist
@@ -437,7 +468,7 @@ def prefix(title,aplimit=10,apprlevel=None,apnamespace=None):
 		pass
 
 	data = urllib.urlencode(prefix_data)
-	response = opener.open('http://runescape.wikia.com/api.php',data)
+	response = opener.open(wiki,data)
 	content = json.load(response)
 	pages = tuple(content['query']['allpages'])
 	for title in pages:
