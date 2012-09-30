@@ -474,3 +474,30 @@ def prefix(title,aplimit=10,apprlevel=None,apnamespace=None):
 	for title in pages:
 		returnlist = [title['title'] for title in pages]
 		return returnlist
+
+def userrights(title):
+	"""
+	@description: Gets the userrights for the specified user
+	@use:
+	import mwhair
+
+	foo = mwhair.userrights('Bar')
+	for rights in foo:
+		print rights ## This is only an example to show the rights
+		... tasks being performed ...
+	"""
+	user_right_data = {
+	'action':'query',
+	'list':'users',
+	'ususers':title,
+	'usprop':'groups',
+	'format':'json'
+	}
+
+	data = urllib.urlencode(user_right_data)
+	response = opener.open(wiki,data)
+	content = json.load(response)
+	rights = tuple(content['query']['users'][0]['groups'])
+	for group in rights:
+		returnlist = [group for group in rights]
+		return returnlist
