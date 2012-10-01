@@ -83,7 +83,7 @@ def logout():
 def edittokens():
 	"""
 	@description: Used to gather tokens to edit, delete, protect, move, block, unblock, email, and import
-	@use: This shouldn't be used in a seperate script, the information is gathered on login
+	@use: This shouldn't be used in a seperate script, the information is gathered on login and used throughout mwhair
 	"""
 	edit_token_data = {
 	'action':'query',
@@ -110,16 +110,19 @@ def edittokens():
 			edit_token = thes['edittoken']
 
 		if 'delete' in warnings:
+			global delete_token
 			delete_token = None
 		else:
 			delete_token = thes['deletetoken']
 
 		if 'protect' in warnings:
+			global protect_token
 			protect_token = None
 		else:
 			protect_token = thes['protecttoken']
 
 		if 'move' in warnings:
+			global move_token
 			move_token = None
 		else:
 			move_token = thes['movetoken']
@@ -178,7 +181,7 @@ def edit(title, section=None):
 	wikipage = thes['revisions'][0]['*']
 	return wikipage
 
-def save(title, text='',summary='',minor=False,bot=True):
+def save(title, text='',summary='',minor=False,bot=True,undo=False):
 	"""
 	@description: Saves the contents of the page
 	@use:
@@ -203,14 +206,131 @@ def save(title, text='',summary='',minor=False,bot=True):
 		save_data['bot'] = 'True'
 	if not text:
 		save_data['text'] = edit(title) # This will make the page purge
+	if undo is True:
+		save_data['undo'] = True
 	data = urllib.urlencode(save_data)
 	response = opener.open(wiki,data)
 	content = json.load(response)
 	return content
 
+def move(fromp, to, movesubpages=True, movetalk=True,reason='',noredirect=False):
+	"""
+	@description: Moves one page to another
+	@use:
+	import mwhair
+
+	mwhair.move('Foo','Bar')
+	"""
+	move_data = {
+	'action':'move',
+	'from':fromp,
+	'to':to,
+	'reason':reason,
+	'token':move_token,
+	'format':'json'
+	}
+	if movesubpages == True:
+		move_data['movesubpages'] = True
+
+	if movetalk == True:
+		move_data['movetalk'] = True
+
+	if noredirect == True:
+		move_data['noredirect'] = True
+	if move_token is not None:
+		data = urllib.urlencode(move_data)
+		response = opener.open(wiki,data)
+		content = json.load(response)
+		return content
+	else:
+		print 'You do not have permission to move.'
+
+def upload(filename, url, comment=''):
+	"""
+	@description: Uploads a file from another url
+	@use:
+	import mwhair
+
+	mwhair.upload('File.png','http://foo.com/bar.png')
+	"""
+	upload_data = {
+	'action':'upload',
+	'filename':filename,
+	'url':url,
+	'comment':comment,
+	'token':edit_token,
+	'format':'json'
+	}
+	data = urllib.urlencode(upload_data)
+	response = opener.open(wiki,data)
+	content = json.load(response)
+	return content
+
+def delete(title, reason=None):
+	"""
+	@description: Deletes a specified page
+	@use:
+	import mwhair
+
+	mwhair.delete('Foo')
+	"""
+	delete_data = {
+	'action':'delete',
+	'title':title,
+	'token':delete_token,
+	'format':'json'
+	}
+	if reason != None:
+		delete_data['reason'] = reason
+	if delete_token is not None:
+		data = urllib.urlencode(delete_data)
+		response = opener.open(wiki,data)
+		content = json.load(response)
+		return content
+	else:
+		print 'You do not have permission to delete.'
+
+def protect(title,edit="all",move="all",expiry="infinite",reason=None):
+	protect_data = {
+	'action':'protect',
+	'title':title,
+	'protections':'edit=' + edit + '|move=' + move,
+	'expiry':expiry,
+	'token':protect_token,
+	'format':'json'
+	}
+	if reason != None:
+		protect_data['reason'] = reason
+	if protect_token is not None:
+		data = urllib.urlencode(protect_data)
+		response = opener.open(wiki,data)
+		content = json.load(response)
+		return content
+	else:
+		print 'You do not have permission to protect.'
+
+def unprotect(title,edit="all",move="all",reason=None):
+	unprotect_data = {
+	'action':'protect',
+	'title':title,
+	'protections':'edit=' + edit +'|move=' + move,
+	'token':protect_token,
+	'format':'json'
+	}
+	if reason != None:
+		unprotect_data['reason'] = reason
+	if protect_data is not None:
+		data = urllib.urlencode(unprotect_data)
+		response = opener.open(wiki)
+		content = json.load(response)
+		return content
+	else:
+		print 'You do not have permission to unprotect.'
+
+
 def recentchanges(bot=False,rclimit=20):
 	"""
-	@description: Gets the last 20 pages edited on the recent changes and who the user who edited it
+	@description: Gets the last 20 pages edited on the recent changes
 	@use:
 	import mwhair
 
