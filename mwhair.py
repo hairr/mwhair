@@ -156,6 +156,16 @@ def edittokens():
 		email_token = thes['emailtoken']
 		import_token = thes['importtoken']
 
+def purge(title):
+	purge_data = {
+	'action':'purge',
+	'titles':title,
+	'format':'json'
+	}
+	data = urllib.urlencode(purge_data)
+	response = opener.open(wiki,data)
+	content = json.load(response)
+
 def edit(title, section=None):
 	"""
 	@description: Gathers information about a specified page
@@ -181,7 +191,7 @@ def edit(title, section=None):
 	wikipage = thes['revisions'][0]['*']
 	return wikipage
 
-def save(title, text='',summary='',minor=False,bot=True,undo=False):
+def save(title, text='',summary='',minor=False,bot=True):
 	"""
 	@description: Saves the contents of the page
 	@use:
@@ -205,13 +215,12 @@ def save(title, text='',summary='',minor=False,bot=True,undo=False):
 	else:
 		save_data['bot'] = 'True'
 	if not text:
-		save_data['text'] = edit(title) # This will make the page purge
-	if undo is True:
-		save_data['undo'] = True
-	data = urllib.urlencode(save_data)
-	response = opener.open(wiki,data)
-	content = json.load(response)
-	return content
+		save_data['text'] = purge(title) # This will make the page purge
+	if text:
+		data = urllib.urlencode(save_data)
+		response = opener.open(wiki,data)
+		content = json.load(response)
+		return content
 
 def move(fromp, to, movesubpages=True, movetalk=True,reason='',noredirect=False):
 	"""
