@@ -157,6 +157,13 @@ def edittokens():
 		import_token = thes['importtoken']
 
 def purge(title):
+	"""
+	@description: Purges the specified page
+	@use:
+	import mwhair
+
+	mwhair.purge('foo')
+	"""
 	purge_data = {
 	'action':'purge',
 	'titles':title,
@@ -300,6 +307,13 @@ def delete(title, reason=None):
 		print 'You do not have permission to delete.'
 
 def protect(title,edit="all",move="all",expiry="infinite",reason=None):
+	"""
+	@description: Protects the specified page
+	@use:
+	import mwhair
+
+	mwhair.protect('foo')
+	"""
 	protect_data = {
 	'action':'protect',
 	'title':title,
@@ -330,12 +344,34 @@ def unprotect(title,edit="all",move="all",reason=None):
 		unprotect_data['reason'] = reason
 	if protect_data is not None:
 		data = urllib.urlencode(unprotect_data)
-		response = opener.open(wiki)
+		response = opener.open(wiki,data)
 		content = json.load(response)
 		return content
 	else:
 		print 'You do not have permission to unprotect.'
 
+def undo(title,summary=False):
+	"""
+	@description: Undo's the current revision on the page
+	@use:
+	import mwhair
+
+	mwhair.undo('foo')
+	@other: If no summary is specified, an automatic summary will be put instead
+	"""
+	undo_data = {
+	'action':'edit',
+	'title':title,
+	'token':edit_token,
+	'undo':revnumber(title),
+	'format':'json'
+	}
+	if summary != False:
+		undo_data['summary'] = summary
+	data = urllib.urlencode(undo_data)
+	response = opener.open(wiki,data)
+	content = json.load(response)
+	return content
 
 def recentchanges(bot=False,rclimit=20):
 	"""
@@ -630,3 +666,47 @@ def userrights(title):
 	for group in rights:
 		returnlist = [group for group in rights]
 		return returnlist
+
+def pageid(title):
+	"""
+	@description: Get's the page id for the specified page
+	@use: NOTICE: This isn't necessarily supposed to be used for another script
+	import mwhair
+
+	pageid = mwhair.pageid('foo')
+	"""
+	pageid_data = {
+	'action':'query',
+	'prop':'revisions',
+	'titles':title,
+	'format':'json'
+	}
+	data = urllib.urlencode(pageid_data)
+	response = opener.open(wiki,data)
+	content = json.load(response)
+	s = content['query']['pages']
+	thes = tuple(s.values())[0]
+	pageid = thes['pageid']
+	return pageid
+
+def revnumber(title):
+	"""
+	@description: Get's the current revision number for the specified page
+	@use: NOTICE: This isn't necessarily supposed to be used for another script
+	import mwhair
+
+	revnumber = mwhair.revnumber('foo')
+	"""
+	revnumber_data = {
+	'action':'query',
+	'prop':'revisions',
+	'titles':title,
+	'format':'json'
+	}
+	data = urllib.urlencode(revnumber_data)
+	response = opener.open(wiki,data)
+	content = json.load(response)
+	s = content['query']['pages']
+	thes = tuple(s.values())[0]
+	revnumber = thes['revisions'][0]['revid']
+	return revnumber
