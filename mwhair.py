@@ -710,3 +710,26 @@ def revnumber(title):
 	thes = tuple(s.values())[0]
 	revnumber = thes['revisions'][0]['revid']
 	return revnumber
+
+def revuser(title):
+	"""
+	@description: Gets the last user to edit the specified pages
+	@use:
+	import mwhair
+
+	revuser = mwhair.revuser('Foo')
+	"""
+	revuser_data = {
+	'action':'query',
+	'prop':'revisions',
+	'titles':title,
+	'rvprop':'user',
+	'format':'json'
+	}
+	data = urllib.urlencode(revuser_data)
+	response = opener.open(wiki,data)
+	content = json.load(response)
+	s = content['query']['pages']
+	thes = tuple(s.values())[0]
+	revuser = thes['revisions'][0]['user']
+	return revuser
