@@ -195,10 +195,15 @@ def edit(title, section=None):
 	content = json.load(response)
 	s = content['query']['pages']
 	thes = tuple(s.values())[0]
-	wikipage = thes['revisions'][0]['*']
-	return wikipage
+	try:
+		wikipage = thes['revisions'][0]['*']
+		return wikipage
+	except KeyError:
+		wikipage = ''
+		return wikipage
 
-def save(title, text='',summary='',minor=False,bot=True):
+
+def save(title, text='',summary='',minor=False,bot=True,section=False,createonly=True):
 	"""
 	@description: Saves the contents of the page
 	@use:
@@ -223,6 +228,8 @@ def save(title, text='',summary='',minor=False,bot=True):
 		save_data['bot'] = 'True'
 	if not text:
 		save_data['text'] = purge(title) # This will make the page purge
+	if section != False:
+		save_data['section'] = section
 	if text:
 		data = urllib.urlencode(save_data)
 		response = opener.open(wiki,data)
