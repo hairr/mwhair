@@ -4,20 +4,26 @@ A MediaWiki Wrapper/Client used for Hairybot
 Setting up
 ==========
 First, change to the directory you are making your bot in. Then execute this line:
+
     git clone git://github.com/hairr/mwhair.git
 This will then create a directory mwhair in that directory.  You can either bring the script into your current directory, or use:
+
     from mwhair import mwhair
 at the top of your script instead.
 
 Beginning your script
 =====================
 It's very easy to begin your script, simply have the first few lines like this (unless you want to import more modules of course):
+
     import mwhair
 or if you aren't moving the script:
+
     from mwhair import mwhair
 Then specify where the wiki's api is located, that's what it can work off of:
+
     mwhair.site('http://foo.com/api.php')
 Now you can login:
+
     mwhair.login('username','password')
 You are now logged in and ready to edit your wiki faster and easier.
 
