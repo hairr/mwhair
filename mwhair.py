@@ -26,7 +26,18 @@ from cookielib import CookieJar
 cj = CookieJar()
 opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
 logged_in = False
-wiki = 'http://runescape.wikia.com/api.php'
+
+def site(site):
+	"""
+	@description: Sets the wiki's api
+	@use:
+	import mwhair
+
+	mwhair.wiki('http://foo.com/api.php')
+	@other: You must specifiy the url of the api with the http protocol and without the www
+	"""
+	global wiki
+	wiki = site
 
 def login(username, password):
 	"""
