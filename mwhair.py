@@ -214,7 +214,7 @@ def edit(title, section=None):
 		return wikipage
 
 
-def save(title, text='',summary='',minor=False,bot=True,section=False,createonly=True):
+def save(title, text='',summary='',minor=False,bot=True,section=False):
 	"""
 	@description: Saves the contents of the page
 	@use:
