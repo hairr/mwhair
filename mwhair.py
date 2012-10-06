@@ -227,7 +227,7 @@ def save(title, text='',summary='',minor=False,bot=True,section=False):
 	save_data = {
 	'action':'edit',
 	'title':title,
-	'text':text,
+	'text':text.encode('utf-8'),
 	'summary':summary,
 	'minor':minor,
 	'token':edit_token,
