@@ -393,6 +393,45 @@ def undo(title,summary=False):
 	content = json.load(response)
 	return content
 
+def rollback(title,summary=None,markbot=False):
+	"""
+	@description: Rollbacks the last (or various) revisions on a page
+	@use:
+	import mwhair
+
+	mwhair.rollback('Foo')
+	@other: If no summary is provided, a default one will be used
+	"""
+	rollback_data_1 = {
+	'action':'query',
+	'prop':'revisions',
+	'titles':title,
+	'rvtoken':'rollback',
+	'format':'json'
+	}
+	data = urllib.urlencode(rollback_data_1)
+	response = opener.open(wiki,data)
+	content = json.load(response)
+	s = content['query']['pages']
+	thes = tuple(s.values())[0]
+	rollback_token = thes['revisions'][0]['rollbacktoken']
+	user = thes['revisions'][0]['user']
+	rollback_data_2 = {
+	'action':'rollback',
+	'title':title,
+	'user':user,
+	'token':rollback_token,
+	'format':'json'
+	}
+	if summary != None:
+		rollback_data_2['summary'] = summary
+	if markbot != False:
+		rollback_data_2['markbot'] = 1
+	data = urllib.urlencode(rollback_data_2)
+	response = opener.open(wiki,data)
+	content = json.load(response)
+	return content
+
 def block(user,expiry='infinite',reason=None,nocreate=False,
 	autoblock=False,noemail=False,talkpage=True,reblock=False,watch=False):
 	"""
