@@ -427,10 +427,13 @@ def block(user,expiry='infinite',reason=None,nocreate=False,
 		block_data['reblock'] = True
 	if watch != False:
 		block_data['watchuser'] = True
-	data = urllib.urlencode(block_data)
-	response = opener.open(wiki,data)
-	content = json.load(response)
-	return content
+	if block_token != None:
+		data = urllib.urlencode(block_data)
+		response = opener.open(wiki,data)
+		content = json.load(response)
+		return content
+	else:
+		print 'You do not have permission to block.'
 
 def unblock(user,reason=None):
 	"""
@@ -448,10 +451,13 @@ def unblock(user,reason=None):
 	}
 	if reason != None:
 		unblock_data['reason'] = reason
-	data = urllib.urlencode(unblock_data)
-	response = opener.open(wiki,data)
-	content = json.load(response)
-	return content
+	if unblock_token != None:
+		data = urllib.urlencode(unblock_data)
+		response = opener.open(wiki,data)
+		content = json.load(response)
+		return content
+	else:
+		print 'You do not have permission to unblock.'
 
 def recentchanges(bot=False,limit=20):
 	"""
