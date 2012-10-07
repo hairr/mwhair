@@ -498,7 +498,7 @@ def unblock(user,reason=None):
 	else:
 		print 'You do not have permission to unblock.'
 
-def recentchanges(bot=False,limit=20):
+def recentchanges(bot=False,limit=20,start=False,end=False):
 	"""
 	@description: Gets the last 20 pages edited on the recent changes
 	@use:
@@ -508,6 +508,7 @@ def recentchanges(bot=False,limit=20):
 	for pages in foo:
 		print page ## This is an example of how to show the pages
 		... tasks being performed ...
+	@other: Start and End syntax is: YYYYMMDDHHMMSS or YYYY-MM-DD-HH-MM-SS
 	"""
 	recent_changes_data = {
 	'action':'query',
@@ -518,6 +519,10 @@ def recentchanges(bot=False,limit=20):
 	}
 	if bot is False:
 		recent_changes_data['rcshow'] = '!bot'
+	if start != False:
+		recent_changes_data['rcstart'] = start
+	if end != False:
+		recent_changes_data['rcend'] = end
 	data = urllib.urlencode(recent_changes_data)
 	response = opener.open(wiki,data)
 	content = json.load(response)
