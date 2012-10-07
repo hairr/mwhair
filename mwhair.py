@@ -531,6 +531,39 @@ def recentchanges(bot=False,limit=20,start=False,end=False):
 		returnlist = [title['title'] for title in pages]
 		return returnlist
 
+def newpages(bot=False,limit=20,start=False,end=False,namespace=None):
+	"""
+	@description: Gets the last (default: 20) pages listed in Special:NewPages or are new pages
+	@use:
+	import mwhair
+
+	pages = mwhair.newpages()
+	for page in pages:
+		print page ## This is only an example to show the page
+	"""
+	new_pages_data = {
+	'action':'query',
+	'list':'recentchanges',
+	'rctype':'new',
+	'rclimit':limit,
+	'format':'json'
+	}
+	if bot is False:
+		new_pages_data['rcshow'] = '!bot'
+	if namespace != None:
+		new_pages_data['rcnamespace'] = namespace
+	if start != False:
+		new_pages_data['rcstart'] = start
+	if end != False:
+		new_pages_data['rcend'] = end
+	data = urllib.urlencode(new_pages_data)
+	response = opener.open(wiki,data)
+	content = json.load(response)
+	pages = tuple(content['query']['recentchanges'])
+	for title in pages:
+		returnlist = [title['title'] for title in pages]
+		return returnlist
+
 def logs(letype=None,leaction=None,lelimit=50,lestart=None,leend=None):
 	"""
 	@description: Gets (default: 50) pages in the specified log, if none specified, it'll list all the logs
