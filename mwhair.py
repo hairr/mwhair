@@ -139,11 +139,13 @@ def edittokens():
 			move_token = thes['movetoken']
 
 		if 'block' in warnings:
+			global block_token
 			block_token = None
 		else:
 			block_token = thes['blocktoken']
 
 		if 'unblock' in warnings:
+			global unblock_token
 			unblock_token = None
 		else:
 			unblock_token = thes['unblocktoken']
@@ -391,7 +393,67 @@ def undo(title,summary=False):
 	content = json.load(response)
 	return content
 
-def recentchanges(bot=False,rclimit=20):
+def block(user,expiry='infinite',reason=None,nocreate=False,
+	autoblock=False,noemail=False,talkpage=True,reblock=False,watch=False):
+	"""
+	@description: Blocks a specified user
+	@use:
+	import mwhair
+
+	mwhair.block('Foo')
+	@other: nocreate will prevent account creation, autoblock will block the last used IP's and 
+	any sussequent IP addresses, noemail will prevent the user from sending an email through the wiki,
+	if talkpage is false, the user will not be able to edit their talk page, reblock will overwrite any
+	existing blocks, if watch is false, you will watch the user/IP's user and talk pages
+	"""
+	block_data = {
+	'action':'block',
+	'user':user,
+	'expiry':expiry,
+	'token':block_token,
+	'format':'json'
+	}
+	if reason != None:
+		block_data['reason'] = reason
+	if nocreate != False:
+		block_data['nocreate'] = True
+	if autoblock != False:
+		block_data['autoblock'] = True
+	if noemail != False:
+		block_data['noemail'] = True
+	if talkpage != True:
+		block_data['notalkpage'] = True
+	if reblock != False:
+		block_data['reblock'] = True
+	if watch != False:
+		block_data['watchuser'] = True
+	data = urllib.urlencode(block_data)
+	response = opener.open(wiki,data)
+	content = json.load(response)
+	return content
+
+def unblock(user,reason=None):
+	"""
+	@description: Unblocks a specified user
+	@use:
+	import mwhair
+
+	mwhair.unblock('Foo')
+	"""
+	unblock_data = {
+	'action':'unblock',
+	'user':user,
+	'token':unblock_token,
+	'format':'json'
+	}
+	if reason != None:
+		unblock_data['reason'] = reason
+	data = urllib.urlencode(unblock_data)
+	response = opener.open(wiki,data)
+	content = json.load(response)
+	return content
+
+def recentchanges(bot=False,limit=20):
 	"""
 	@description: Gets the last 20 pages edited on the recent changes
 	@use:
@@ -406,13 +468,11 @@ def recentchanges(bot=False,rclimit=20):
 	'action':'query',
 	'list':'recentchanges',
 	'rcprop':'user|title',
-	'rclimit':rclimit,
+	'rclimit':limit,
 	'format':'json'
 	}
 	if bot is False:
 		recent_changes_data['rcshow'] = '!bot'
-	else:
-		pass
 	data = urllib.urlencode(recent_changes_data)
 	response = opener.open(wiki,data)
 	content = json.load(response)
@@ -517,8 +577,6 @@ def imageusage(title,iulimit=10,iunamespace=None):
 	}
 	if iunamespace != None:
 		imageusage_data['iunamespace'] = iunamespace
-	else:
-		pass
 	data = urllib.urlencode(imageusage_data)
 	response = opener.open(wiki,data)
 	content = json.load(response)
@@ -547,8 +605,6 @@ def category(title,cmlimit=10,cmnamespace=None):
 	}
 	if cmnamespace != None:
 		category_data['cmnamespace'] = cmdnamespace
-	else:
-		pass
 	data = urllib.urlencode(category_data)
 	response = opener.open(wiki,data)
 	content = json.load(response)
@@ -577,8 +633,6 @@ def template(title,eilimit=10,einamespace=None):
 	}
 	if einamespace != None:
 		template_data['einamespace'] = einamespace
-	else:
-		pass
 	data = urllib.urlencode(template_data)
 	response = opener.open(wiki,data)
 	content = json.load(response)
@@ -607,8 +661,6 @@ def usercontribs(title,uclimit=10,ucnamespace=None):
 	}
 	if ucnamespace != None:
 		user_contrib_data['ucnamespace'] = ucnamespace
-	else:
-		pass
 	data = urllib.urlencode(user_contrib_data)
 	response = opener.open(wiki,data)
 	content = json.load(response)
@@ -642,14 +694,8 @@ def prefix(title,aplimit=10,apprlevel=None,apnamespace=None):
 
 	if apprlevel != None:
 		prefix_data['apprlevel'] = apprlevel
-	else:
-		pass
-
 	if apnamespace != None:
 		prefix_data['apnamespace'] = apnamespace
-	else:
-		pass
-
 	data = urllib.urlencode(prefix_data)
 	response = opener.open(wiki,data)
 	content = json.load(response)
