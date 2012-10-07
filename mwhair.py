@@ -686,7 +686,7 @@ def template(title,eilimit=10,einamespace=None):
 		returnlist = [title['title'] for title in pages]
 		return returnlist
 
-def usercontribs(title,uclimit=10,ucnamespace=None):
+def usercontribs(title,limit=10,namespace=None,top=False):
 	"""
 	@description: Gets (default: 10) pages last edited by the specified user
 	@use:
@@ -701,11 +701,13 @@ def usercontribs(title,uclimit=10,ucnamespace=None):
 	'action':'query',
 	'list':'usercontribs',
 	'ucuser':title,
-	'uclimit':uclimit,
+	'uclimit':limit,
 	'format':'json'
 	}
-	if ucnamespace != None:
-		user_contrib_data['ucnamespace'] = ucnamespace
+	if namespace != None:
+		user_contrib_data['ucnamespace'] = namespace
+	if top != False:
+		user_contrib_data['uctoponly'] = True
 	data = urllib.urlencode(user_contrib_data)
 	response = opener.open(wiki,data)
 	content = json.load(response)
