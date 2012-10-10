@@ -25,7 +25,6 @@ from cookielib import CookieJar
 
 cj = CookieJar()
 opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
-logged_in = False
 
 def site(site):
 	"""
@@ -62,7 +61,6 @@ def login(username, password):
 	content = json.load(response)
 	if content['login']['result'] == 'Success':
 		print 'Now logged in as %s' % content['login']['lgusername']
-		logged_in = True
 		edittokens()
 	elif content ['login']['result'] == 'NeedToken':
 		print 'Error occured while trying to log in...'
