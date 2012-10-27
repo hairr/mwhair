@@ -21,10 +21,12 @@ import urllib2
 import urllib
 import json
 import sys
+import time
 from cookielib import CookieJar
 
 cj = CookieJar()
 opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
+opener.add_headers = [('User-Agent','Python Mwhair')]
 
 def site(site):
 	"""
@@ -229,7 +231,6 @@ def save(title, text='',summary='',minor=False,bot=True,section=False):
 	'title':title,
 	'text':text.encode('utf-8'),
 	'summary':summary,
-	'minor':minor,
 	'token':edit_token,
 	'format':'json'
 	}
@@ -237,6 +238,8 @@ def save(title, text='',summary='',minor=False,bot=True,section=False):
 		pass
 	else:
 		save_data['bot'] = 'True'
+	if minor != False:
+		save_data['minor'] = minor
 	if not text:
 		save_data['text'] = purge(title) # This will make the page purge
 	if section != False:
@@ -265,10 +268,8 @@ def move(fromp, to, movesubpages=True, movetalk=True,reason='',noredirect=False)
 	}
 	if movesubpages == True:
 		move_data['movesubpages'] = True
-
 	if movetalk == True:
 		move_data['movetalk'] = True
-
 	if noredirect == True:
 		move_data['noredirect'] = True
 	if move_token is not None:
@@ -368,7 +369,7 @@ def unprotect(title,edit="all",move="all",reason=None):
 	else:
 		print 'You do not have permission to unprotect.'
 
-def undo(title,summary=False):
+def undo(title,summary=False,minor=False,bot=True):
 	"""
 	@description: Undo's the current revision on the page
 	@use:
@@ -386,6 +387,10 @@ def undo(title,summary=False):
 	}
 	if summary != False:
 		undo_data['summary'] = summary
+	if minor != False:
+		undo_data['minor'] = minor
+	if bot == True:
+		undo_data['bot'] = '1'
 	data = urllib.urlencode(undo_data)
 	response = opener.open(wiki,data)
 	content = json.load(response)
@@ -608,7 +613,46 @@ def logs(letype=None,leaction=None,lelimit=50,lestart=None,leend=None):
 		returnlist = [title['title'] for title in pages]
 		return returnlist
 
-def backlinks(title,bllimit=10,blnamespace=None):
+def links(title,limit=10,namespace=None):
+	if limit != 'max':
+		links_data = {
+		'action':'query',
+		'prop':'links',
+		'titles':title,
+		'pllimit':limit,
+		'format':'json'
+		}
+		if namespace != None: links_data['plnamespace'] = namespace
+		data = urllib.urlencode(links_data)
+		response = opener.open(wiki,data)
+		content = json.load(response)
+		pages = tuple(content['query']['pages'].values())
+		for title in pages:
+			returnlist = [title['title'] for title in pages]
+			return returnlist
+	else:
+		returnlist = []
+		while 1:
+			links_data = {
+			'action':'query',
+			'prop':'links',
+			'titles':title,
+			'pllimit':limit,
+			'format':'json'
+			}
+			if namespace != None: links_data['plnamespace'] = namespace
+			data = urllib.urlencode(links_data)
+			response = opener.open(wiki,data)
+			content = json.load(response)
+			content2 = tuple(content['query']['pages'].values())
+			for page in content2[0]['links']:
+				returnlist.append(page['title'])
+			try:
+				links_data['plcontinue'] = content['query-continue']['links']['plcontinue']
+			except:
+				return returnlist
+
+def backlinks(title,limit=10,namespace=None,redirects=True):
 	"""
 	@description: Gets (default: 10) pages that link to the specified title
 	@use:
@@ -619,24 +663,47 @@ def backlinks(title,bllimit=10,blnamespace=None):
 		print pages ## This is only an example to show the pages
 		... tasks being performed ...
 	"""
-	backlink_data = {
-	'action':'query',
-	'list':'backlinks',
-	'bltitle':title,
-	'bllimit':bllimit,
-	'format':'json'
-	}
-	if blnamespace != None:
-		backlink_data['blnamespace'] = blnamespace
+	if limit != 'max':
+		backlink_data = {
+		'action':'query',
+		'list':'backlinks',
+		'bltitle':title,
+		'bllimit':limit,
+		'format':'json'
+		}
+		if namespace != None:
+			backlink_data['blnamespace'] = namespace
+		if redirects != True:
+			backlink_data['blfilterredir'] = 'nonredirects'
+		data = urllib.urlencode(backlink_data)
+		response = opener.open(wiki,data)
+		content = json.load(response)
+		pages = tuple(content['query']['backlinks'])
+		for title in pages:
+			returnlist = [title['title'] for title in pages]
+			return returnlist
 	else:
-		pass
-	data = urllib.urlencode(backlink_data)
-	response = opener.open(wiki,data)
-	content = json.load(response)
-	pages = tuple(content['query']['backlinks'])
-	for title in pages:
-		returnlist = [title['title'] for title in pages]
-		return returnlist
+		returnlist = []
+		while 1:
+			backlink_data = {
+			'action':'query',
+			'list':'backlinks',
+			'bltitle':title,
+			'bllimit':'max',
+			'format':'json'
+			}
+			if namespace != None:
+				backlink_data['blnamespace'] = namespace
+			data = urllib.urlencode(backlink_data)
+			response = opener.open(wiki,data)
+			content = json.load(response)
+			content2 = content['query']['backlinks']
+			for page in content2:
+				returnlist.append(page['title'])
+			try:
+				backlink_data['blcontinue'] = content['query-continue']['backlinks']['blcontinue']
+			except:
+				return returnlist
 
 def imageusage(title,iulimit=10,iunamespace=None):
 	"""
@@ -666,7 +733,7 @@ def imageusage(title,iulimit=10,iunamespace=None):
 		returnlist = [title['title'] for title in pages]
 		return returnlist
 
-def category(title,cmlimit=10,cmnamespace=None):
+def category(title,limit=10,cmnamespace=None,time=False):
 	"""
 	@description: Gets (default: 10) pages that are used in the specified category
 	@use:
@@ -676,23 +743,53 @@ def category(title,cmlimit=10,cmnamespace=None):
 	for pages in foo:
 		print pages ## This is only an example to show the pages
 		... tasks being performed ...
+	@other: If time is true, this will most likely stop some errors with bandwith
 	"""
-	category_data = {
-	'action':'query',
-	'list':'categorymembers',
-	'cmtitle':title,
-	'cmlimit':cmlimit,
-	'format':'json'
-	}
-	if cmnamespace != None:
-		category_data['cmnamespace'] = cmdnamespace
-	data = urllib.urlencode(category_data)
-	response = opener.open(wiki,data)
-	content = json.load(response)
-	pages = tuple(content['query']['categorymembers'])
-	for title in pages:
-		returnlist = [title['title'] for title in pages]
-		return returnlist
+	if limit != 'max':
+		category_data = {
+		'action':'query',
+		'list':'categorymembers',
+		'cmtitle':title,
+		'cmlimit':limit,
+		'format':'json'
+		}
+		if cmnamespace != None: 
+			category_data['cmnamespace'] = cmnamespace
+		data = urllib.urlencode(category_data)
+		response = opener.open(wiki,data)
+		content = json.load(response)
+		try:
+			pages = tuple(content['query']['categorymembers'])
+			for title in pages:
+				returnlist = [title['title'] for title in pages]
+				return returnlist
+		except:
+			return None
+	else:
+		returnlist = []
+		while 1:
+			category_data = {
+			"action":"query",
+			"list":"categorymembers",
+			"cmtitle":title,
+			"cmlimit":"max",
+			"cmprop":"title",
+			"format":"json"
+			}
+			if cmnamespace != None: 
+				category_data['cmnamespace'] = cmnamespace
+			data = urllib.urlencode(category_data)
+			response = opener.open(wiki,data)
+			content = json.load(response)
+			content2 = content["query"]["categorymembers"]
+			for page in content2:
+				returnlist.append(page["title"])
+			try:
+				category_data['cmcontinue'] = content["query-continue"]["categorymembers"]["cmcontinue"]
+				if time != False: 
+					time.sleep(5)
+			except:
+				return returnlist
 
 def template(title,eilimit=10,einamespace=None):
 	"""
@@ -880,3 +977,23 @@ def revuser(title):
 	thes = tuple(s.values())[0]
 	revuser = thes['revisions'][0]['user']
 	return revuser
+
+def namespace(title):
+	"""
+	@description: Get's the namespace of an article
+	@use:
+	import mwhair
+
+	namespace = mwhair.namespace('Foo')
+	"""
+	namespace_data = {
+	'action':'query',
+	'prop':'info',
+	'titles':title,
+	'format':'json'
+	}
+	data = urllib.urlencode(namespace_data)
+	response = opener.open(wiki,data)
+	content = json.load(response)
+	namespace = tuple(content['query']['pages'].values())[0]['ns']
+	return namespace
