@@ -229,11 +229,14 @@ def save(title, text='',summary='',minor=False,bot=True,section=False):
 	save_data = {
 	'action':'edit',
 	'title':title,
-	'text':text.encode('utf-8'),
 	'summary':summary,
 	'token':edit_token,
 	'format':'json'
 	}
+	try:
+		save_data['text'] = text.encode('utf-8')
+	except:
+		save_data['text'] = text
 	if bot is False:
 		pass
 	else:
@@ -534,6 +537,52 @@ def recentchanges(bot=False,limit=20,start=False,end=False):
 		returnlist = [title['title'] for title in pages]
 		return returnlist
 
+def allpages(limit=10,time=False,namespace=None):
+	"""
+	@description: Gets the first (default: 10) pages listed in Special:AllPages
+	@use:
+	import mwhair
+	pages = allpages()
+	"""
+	returnlist = []
+	if limit != 'max':
+		all_pages_data = {
+		'action':'query',
+		'list':'allpages',
+		'aplimit':limit,
+		'format':'json'
+		}
+		if namespace != None:
+			all_pages_data['apnamespace'] = namespace
+		data = urllib.urlencode(all_pages_data)
+		response = opener.open(wiki,data)
+		content = json.load(response)
+		pages = tuple(content['query']['allpages'])
+		for title in pages:
+			returnlist = [title['title'] for title in pages]
+			return returnlist
+	else:
+		while 1:
+			all_pages_data = {
+			'action':'query',
+			'list':'allpages',
+			'aplimit':'max',
+			'format':'json'
+			}
+			if namespace != None:
+				all_pages_data['apnamespace'] = namespace
+			data = urllib.urlencode(all_pages_data)
+			response = opener.open(wiki,data)
+			content = json.load(response)
+			content2 = tuple(content['query']['allpages'])
+			for page in content2:
+				returnlist.append(page['title'])
+			try:
+				all_pages_data['apcontinue'] = content['query-continue']['allpages']['apcontinue']
+				if time != False: time.sleep(1)
+			except:
+				return returnlist
+
 def newpages(bot=False,limit=20,start=False,end=False,namespace=None):
 	"""
 	@description: Gets the last (default: 20) pages listed in Special:NewPages or are new pages
@@ -614,6 +663,7 @@ def logs(letype=None,leaction=None,lelimit=50,lestart=None,leend=None):
 		return returnlist
 
 def links(title,limit=10,namespace=None):
+	returnlist = []
 	if limit != 'max':
 		links_data = {
 		'action':'query',
@@ -627,11 +677,13 @@ def links(title,limit=10,namespace=None):
 		response = opener.open(wiki,data)
 		content = json.load(response)
 		pages = tuple(content['query']['pages'].values())
-		for title in pages:
-			returnlist = [title['title'] for title in pages]
-			return returnlist
+		try:
+			for title in pages[0]['links']:
+				returnlist = [title['title'] for title in pages[0]['links']]
+				return returnlist
+		except:
+			return None
 	else:
-		returnlist = []
 		while 1:
 			links_data = {
 			'action':'query',
@@ -791,7 +843,7 @@ def category(title,limit=10,cmnamespace=None,time=False):
 			except:
 				return returnlist
 
-def template(title,eilimit=10,einamespace=None):
+def template(title,eilimit=10,einamespace=None,eicontinue=None):
 	"""
 	@description: Gets (default: 10) pages that use the specified template
 	@use:
@@ -811,6 +863,8 @@ def template(title,eilimit=10,einamespace=None):
 	}
 	if einamespace != None:
 		template_data['einamespace'] = einamespace
+	if eicontinue != None:
+		template_data['eicontinue'] = eicontinue
 	data = urllib.urlencode(template_data)
 	response = opener.open(wiki,data)
 	content = json.load(response)
@@ -979,13 +1033,6 @@ def revuser(title):
 	return revuser
 
 def namespace(title):
-	"""
-	@description: Get's the namespace of an article
-	@use:
-	import mwhair
-
-	namespace = mwhair.namespace('Foo')
-	"""
 	namespace_data = {
 	'action':'query',
 	'prop':'info',
