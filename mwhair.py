@@ -24,6 +24,7 @@ import sys
 import time
 from cookielib import CookieJar
 
+__version__ = 2.0
 cj = CookieJar()
 opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
 opener.add_headers = [('User-Agent','Python Mwhair')]
